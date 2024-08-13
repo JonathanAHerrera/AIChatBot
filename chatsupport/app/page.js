@@ -4,10 +4,24 @@ import Button from '@mui/material/Button';
 import { Box, Stack, TextField } from '@mui/material';
 
 export default function Home() {
-  const [messages, SetMessages] = useState([
+  const [messages, setMessages] = useState([
     { role: 'Bot',
       content: 'Hi im fAIshonBot! How can I help you today?'}
   ]) 
+  const [message, setMessage] = useState([''])
+
+  const sendMessage = async () => {
+    setMessage('')
+    setMessages((messages) => [...messages, {role:'User', content: message}])
+    const response = await fetch('api/chat',{
+      method: 'POST',
+      headers: {'Content-Type' :  'application/json'},
+      body: JSON.stringify([...messages, {role:'User', content: message}])
+    })
+    const data = await response.json()
+    setMessages((messages) => [...messages, {role:'Bot', content: data.message}])
+  }
+
   return (
     <Box
     width={'100vw'}
@@ -17,8 +31,8 @@ export default function Home() {
     justifyContent={'center'}
     alignItems={'center'}
     >
-      <Stack direction={'column'} width={'500px'} height={'700px'} border={'1px solid black'} p={2}>
-        <Stack direction={'column'} spacing={2} flexGrow={1}>
+      <Stack direction={'column'} width={'500px'} height={'700px'} border={'1px solid black'} p={2} >
+        <Stack direction={'column'} spacing={2} flexGrow={1}overflow={'auto'} maxHeight={'100%'}>
           {
             messages.map((message, index) => (
               <Box
@@ -34,16 +48,17 @@ export default function Home() {
                   }
                   color={'white'}
                   borderRadius={16}
-                  p={2}
+                  p={4}
                 >{message.content}
                 </Box>
               </Box>
             ))
           }
         </Stack>
-        <Stack direction={'row'} spacing={2}>
-          <TextField label='Message' fullWidth/>
-          <Button>Send</Button>
+        <Stack direction={'row'} spacing={2} mt={2}>
+          <TextField label='Message' fullWidth value={message} onChange={(e) => setMessage(e.target.value)}/>
+          <Button varient="contained" onClick={sendMessage}
+          >Send</Button>
         </Stack>
       </Stack>
     </Box>
